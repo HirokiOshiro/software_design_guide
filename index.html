@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設計のことば — バイブコーディングで「どう作るか」を考えるためのガイド</title>
+<meta name="description" content="生成AIでコードを書く前に知っておきたい「設計」の考え方を、非エンジニア向けに解説。画面設計、データ設計、状態遷移、システム構成、設計の伝え方を具体例とともに学ぶ。">
+<meta name="theme-color" content="#1a1a1a">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="設計のことば — バイブコーディングで「どう作るか」を考えるためのガイド">
+<meta property="og:description" content="画面設計・データ設計・状態遷移・システム構成を、バイブコーディングの文脈で非エンジニア向けに解説する学習ガイド。">
+<meta property="og:site_name" content="設計のことば">
+<meta property="og:url" content="https://oshirohiroki.github.io/">
+<meta property="og:image" content="https://oshirohiroki.github.io/assets/images/ogp-default.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="設計のことば — バイブコーディングで「どう作るか」を考えるためのガイド">
+<meta name="twitter:description" content="画面設計・データ設計・状態遷移・システム構成を、バイブコーディングの文脈で非エンジニア向けに解説する学習ガイド。">
+<meta name="twitter:image" content="https://oshirohiroki.github.io/assets/images/ogp-default.svg">
+<link rel="canonical" href="https://oshirohiroki.github.io/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%90%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Serif+JP:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+<script src="assets/js/main.js" defer></script>
+</head>
+<body>
+
+<!-- ═══════════════ Hero ═══════════════ -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Design for Vibe Coding</div>
+    <h1>設計のことば<br><em>「どう作るか」を考える</em></h1>
+    <p class="hero-desc">
+      生成AIに「作って」と言う前に、「こう作ってほしい」と言えるようになるためのガイド。<br>
+      画面設計、データ設計、状態遷移、システム構成 — ソフトウェアの設計を構成する4つの柱を、<br>
+      バイブコーディングの文脈で非エンジニア向けに解説する。
+    </p>
+  </div>
+</header>
+
+<!-- ═══════════════ TOC ═══════════════ -->
+<nav class="toc-bar">
+  <div class="toc-inner">
+    <a href="#intro" class="toc-link">設計とは</a>
+    <a href="#screen" class="toc-link">① 画面設計</a>
+    <a href="#data" class="toc-link">② データ設計</a>
+    <a href="#state" class="toc-link">③ 状態遷移</a>
+    <a href="#architecture" class="toc-link">④ システム構成</a>
+    <a href="#communicate" class="toc-link">⑤ AIに伝える</a>
+    <a href="#calibrate" class="toc-link">⑥ 匙加減</a>
+    <a href="#checklist" class="toc-link">✓ チェックリスト</a>
+    <a href="#keywords" class="toc-link">用語索引</a>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ═══════════════ Introduction ═══════════════ -->
+<section class="section" id="intro">
+  <div class="section-num">INTRODUCTION</div>
+  <h2>「設計」という言葉の射程</h2>
+  <p class="section-subtitle">設計とは図面を描くことではない。「まだ存在しないものについて、あらかじめ決断する」ことである</p>
+
+  <div class="epigraph">
+    <p>設計は、見えるもの（画面、ボタン、入力欄）だけでなく、見えないもの（データの構造、状態の遷移、部品の境界線）についての判断の集合体である。</p>
+    <p>バイブコーディングにおける設計の目的は、正式な設計書を書くことではない。AIに「何を」「どの順序で」「どういう前提で」作らせるかの判断軸を、自分の中に持つことである。</p>
+  </div>
+
+  <p>「設計」と聞くと、UMLダイアグラムやER図といった専門的な図面を思い浮かべるかもしれません。しかし設計の本質は、図面そのものではなく<strong>「まだ存在しないシステムについて、事前に意思決定すること」</strong>です。</p>
+
+  <p>たとえば「タスク管理アプリを作りたい」とAIに伝えるとき、以下のような問いに答えることが、すでに設計です：</p>
+
+  <ul class="checklist">
+    <li>
+      <span class="q">タスクの一覧画面と詳細画面は分けるのか、一つの画面に収めるのか？</span>
+      <span class="hint">→ 画面設計の判断</span>
+    </li>
+    <li>
+      <span class="q">タスクには「期限」「担当者」「カテゴリ」の情報を持たせるか？</span>
+      <span class="hint">→ データ設計の判断</span>
+    </li>
+    <li>
+      <span class="q">タスクは「未着手→進行中→完了」と遷移するのか、「完了」から「未着手」に戻せるのか？</span>
+      <span class="hint">→ 状態遷移の判断</span>
+    </li>
+    <li>
+      <span class="q">データはブラウザだけに保存するのか、サーバーに保存して他の端末からもアクセスしたいのか？</span>
+      <span class="hint">→ システム構成の判断</span>
+    </li>
+  </ul>
+
+  <p>これらの問いに「正解」はありません。プロジェクトの規模、利用者の数、データの性質によって最適な判断は変わります。大切なのは、<strong>これらの問いが存在することを知っていること</strong>、そして<strong>判断を先送りにしたことを自覚していること</strong>です。</p>
+
+  <h3>このガイドの構成</h3>
+  <p>設計を構成する4つの柱を、それぞれ独立した章で解説します。最後に、それらをAIにどう伝えるか、そしてどこまでやるべきかの匙加減を扱います。</p>
+
+  <div class="concept-flow">
+    <div class="concept-box">
+      <div class="label">CHAPTER 01</div>
+      <div class="name">画面設計</div>
+      <div class="desc">ユーザーに見えるもの</div>
+    </div>
+    <div class="concept-arrow">+</div>
+    <div class="concept-box">
+      <div class="label">CHAPTER 02</div>
+      <div class="name">データ設計</div>
+      <div class="desc">保存すべきもの</div>
+    </div>
+    <div class="concept-arrow">+</div>
+    <div class="concept-box">
+      <div class="label">CHAPTER 03</div>
+      <div class="name">状態遷移</div>
+      <div class="desc">データの「動き」</div>
+    </div>
+  </div>
+  <div class="concept-flow mt-sm">
+    <div class="concept-box">
+      <div class="label">CHAPTER 04</div>
+      <div class="name">システム構成</div>
+      <div class="desc">部品の組み合わせ</div>
+    </div>
+    <div class="concept-arrow">→</div>
+    <div class="concept-box">
+      <div class="label">CHAPTER 05</div>
+      <div class="name">AIに伝える</div>
+      <div class="desc">設計を指示に変換する</div>
+    </div>
+    <div class="concept-arrow">→</div>
+    <div class="concept-box concept-box-accent">
+      <div class="label text-accent">CHAPTER 06</div>
+      <div class="name text-accent">匙加減</div>
+      <div class="desc">やりすぎない設計</div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-title">💡 このガイドの前提</div>
+    本ガイドは「Vibe Coding Preflight Guide」の「設計を考える」章を深掘りした独立文書です。要件定義・品質・安全性についてはPreflight Guideを参照してください。
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 1: Screen Design ═══════════════ -->
+<section class="section" id="screen">
+  <div class="section-num">CHAPTER 01</div>
+  <h2>画面設計 — ユーザーが見るものを先に描く</h2>
+  <p class="section-subtitle">「どんな画面が必要で、それぞれの画面にはどんな要素があり、画面間をどう移動するか」を決める</p>
+
+  <p>画面設計は、設計の中で最も直感的に取り組みやすい領域です。なぜなら、ユーザーが実際に目にするもの — 画面、ボタン、入力欄、メッセージ — を対象にしているからです。</p>
+
+  <p>ただし「画面のデザイン（見た目の美しさ）」と「画面設計」は異なります。画面設計とは、<strong>どんな画面が存在し、各画面にどんな情報と操作があり、画面間をどう移動するか</strong>を構造的に決めることです。色やフォントはその後の話です。</p>
+
+  <h3>画面設計で決める3つのこと</h3>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">🗺️</div>
+      <div class="card-title blue-t">画面一覧と遷移</div>
+      <div class="card-desc">
+        システムに存在する全画面のリストと、画面間の移動経路。<br>
+        「トップ画面→ログイン→ダッシュボード→タスク詳細」のような流れ
+      </div>
+    </div>
+    <div class="card green">
+      <div class="card-icon">📐</div>
+      <div class="card-title green-t">画面レイアウト</div>
+      <div class="card-desc">
+        各画面に何が配置されるか。入力欄、ボタン、一覧表示、メッセージ領域の位置関係。<br>
+        ワイヤーフレーム（線画の配置図）で十分
+      </div>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">📥</div>
+      <div class="card-title purple-t">入出力の定義</div>
+      <div class="card-desc">
+        各画面で「ユーザーが入力するもの」と「システムが表示するもの」の項目一覧。<br>
+        入力の制約（必須/任意、文字数制限、形式）も含む
+      </div>
+    </div>
+  </div>
+
+  <h3>画面遷移図 — なぜ重要か</h3>
+
+  <p>画面遷移図は、設計の中でも<strong>AIへの指示精度に最も直接的に影響する</strong>成果物です。なぜなら、AIは個別の画面を「それらしく」作ることは得意ですが、画面同士の関係性を勝手に推測させると矛盾が生まれるからです。</p>
+
+  <p>たとえば「イベント予約アプリ」を画面遷移なしに依頼すると、次のようなことが起こりえます：</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>問題</th><th>何が起きるか</th><th>原因</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>画面の重複</td>
+        <td>「イベント一覧」が2種類生成される（検索結果とマイページ用）</td>
+        <td>一覧画面が何画面必要かの判断がない</td>
+      </tr>
+      <tr>
+        <td>遷移の欠落</td>
+        <td>予約完了画面からトップに戻る導線がない</td>
+        <td>「どの画面からどこに行けるか」の全体像がない</td>
+      </tr>
+      <tr>
+        <td>状態の不整合</td>
+        <td>ログイン前でも予約ボタンが表示される</td>
+        <td>「認証状態によって見える画面が変わる」の定義がない</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>画面遷移図の書き方 — 3つのレベル</h3>
+
+  <p>画面遷移図は、凝ったツールを使う必要はありません。大事なのは<strong>「全画面を列挙し、画面間の移動を矢印で表す」</strong>ことです。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>レベル</th><th>方法</th><th>用途</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-screen">Lv.1</span></td>
+        <td>テキストで箇条書き</td>
+        <td>最速で全画面を列挙したいとき。AIへの指示にそのまま含められる</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-screen">Lv.2</span></td>
+        <td>Mermaid記法で図を生成</td>
+        <td>遷移の方向と条件を視覚化したいとき。AIに書かせることも可能</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-screen">Lv.3</span></td>
+        <td>Figma・手書きでワイヤーフレーム付き</td>
+        <td>画面のレイアウトまで固めたいとき。最も伝達力が高い</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>それぞれの具体例を見てみます。「社内の備品予約システム」を題材にします。</p>
+
+  <div class="compare-grid">
+    <div class="compare-box">
+      <span class="compare-label text-blue">Lv.1: テキスト版</span>
+      <pre>■ 画面一覧
+1. ログイン画面
+2. 備品一覧画面（検索・フィルタ付き）
+3. 備品詳細 + 予約フォーム
+4. 予約確認画面
+5. マイ予約一覧
+6. 管理者：備品管理画面
+
+■ 主な遷移
+・ログイン → 備品一覧
+・備品一覧 → 備品詳細
+・備品詳細 → 予約確認 → 備品一覧
+・全画面のヘッダー → マイ予約一覧
+・管理者のみ：ヘッダー → 備品管理</pre>
+    </div>
+    <div class="compare-box">
+      <span class="compare-label text-purple">Lv.2: Mermaid記法版</span>
+      <pre>graph TD
+  A[ログイン] --> B[備品一覧]
+  B --> C[備品詳細]
+  C --> D[予約確認]
+  D --> B
+  B --> E[マイ予約一覧]
+  E --> C
+  B --> F[備品管理]
+  F --> B
+
+  style F stroke:#991b1b
+  note: F は管理者のみ</pre>
+    </div>
+  </div>
+
+  <h3>入出力の定義 — 見落としやすい「制約」</h3>
+
+  <p>「フォームがある」だけでは設計として不十分です。入力項目ごとに<strong>制約</strong>を定義しておくと、AIが生成するバリデーションの精度が格段に上がります。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>項目</th><th>型</th><th>必須</th><th>制約</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>予約日</td>
+        <td>日付</td>
+        <td>✓</td>
+        <td>今日以降の日付のみ</td>
+        <td>土日・祝日は選択不可にするか？</td>
+      </tr>
+      <tr>
+        <td>利用時間</td>
+        <td>時間範囲</td>
+        <td>✓</td>
+        <td>30分単位、最大8時間</td>
+        <td>既存予約との重複チェックが必要</td>
+      </tr>
+      <tr>
+        <td>利用目的</td>
+        <td>テキスト</td>
+        <td>—</td>
+        <td>最大200文字</td>
+        <td>管理者が予約理由を確認するため</td>
+      </tr>
+      <tr>
+        <td>備品ID</td>
+        <td>数値</td>
+        <td>✓</td>
+        <td>既存備品のIDのみ</td>
+        <td>URLパラメータから自動取得</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>「備考」欄に書かれているような問いかけ — 「土日は？」「重複チェックは？」— が、まさに設計の本質です。これらをAIに明示的に伝えるか、AIに推測させるかで、出力の質が大きく変わります。</p>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠ 「一覧画面」は思ったより複雑</div>
+    <p class="text-sm mb-0">
+      一覧画面はシンプルに見えますが、実は設計上の判断が集中する場所です。ページネーション（1ページに何件？）、ソート（何順で？ 切り替えは？）、フィルタ（どの項目で？ 複数条件は？）、空の状態（データがゼロ件の時は何を表示する？）、ローディング中の表示 — すべてが一覧画面の設計項目です。
+    </p>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">自分のプロジェクトの画面設計を整理したいとき</div>
+    <code>以下のプロジェクトの画面設計を手伝ってください。
+
+プロジェクト：[あなたのプロジェクトの説明]
+主な利用者：[誰が使うか]
+主要な操作：[ユーザーが行う主な操作]
+
+以下の成果物を作成してください：
+1. 画面一覧（全画面の名前と一言説明のリスト）
+2. 画面遷移図（Mermaid記法で。認証状態による分岐も含む）
+3. 各画面の入出力定義（主要画面3つについて、入力項目・表示項目・制約条件の表）
+4. 見落としやすい画面の指摘（エラー画面、空データ画面、確認ダイアログなど）
+
+画面の見た目（色やフォント）ではなく、構造と情報の流れに集中してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 2: Data Design ═══════════════ -->
+<section class="section" id="data">
+  <div class="section-num">CHAPTER 02</div>
+  <h2>データ設計 — 「何を保存するか」から始める</h2>
+  <p class="section-subtitle">データの構造を決めることは、システムの骨格を決めることに等しい</p>
+
+  <p>画面はユーザーが見る「表面」ですが、データはシステムの「骨格」です。画面のデザインは後から変更しやすいですが、データの構造を後から変えるのは極めてコストが高い。これが、データ設計を早い段階で考えておくべき最大の理由です。</p>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠ なぜデータ構造の変更はコストが高いのか</div>
+    <p class="text-sm mb-0">
+      データ構造を変えるということは、そのデータを読み書きしているすべてのコードに影響が及ぶということです。「ユーザーテーブルに"部署"カラムを追加する」だけでも、登録画面、編集画面、一覧画面、検索機能、API、バリデーション、テストデータ — すべてに手を入れる必要があります。データ量が増えた後の構造変更は、さらに移行作業が加わります。
+    </p>
+  </div>
+
+  <h3>データ設計で考える3つの層</h3>
+
+  <div class="card-grid">
+    <div class="card purple">
+      <div class="card-icon">📦</div>
+      <div class="card-title purple-t">エンティティ（実体）</div>
+      <div class="card-desc">
+        システムが管理する「もの」の種類。<br>
+        例：ユーザー、タスク、コメント、予約、商品、カテゴリ
+      </div>
+    </div>
+    <div class="card blue">
+      <div class="card-icon">📋</div>
+      <div class="card-title blue-t">属性（カラム）</div>
+      <div class="card-desc">
+        各エンティティが持つ情報の項目。<br>
+        例：ユーザーの「名前」「メール」「作成日」「ロール」
+      </div>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🔗</div>
+      <div class="card-title green-t">関連（リレーション）</div>
+      <div class="card-desc">
+        エンティティ同士の関係。<br>
+        例：ユーザーは複数のタスクを持つ。タスクは1つのカテゴリに属する
+      </div>
+    </div>
+  </div>
+
+  <h3>具体例：「読書記録アプリ」のデータ設計</h3>
+
+  <p>「読んだ本を記録し、感想を書き、他の人と共有できるアプリ」を例に、データ設計のプロセスを見てみます。</p>
+
+  <p><strong>Step 1: エンティティの洗い出し</strong></p>
+  <p>まず「このシステムが管理する"もの"は何か」をリストアップします。</p>
+
+  <div class="diagram-wrap">
+    <div class="text-diagram"><span class="hl">ユーザー</span>  ──  アプリを使う人
+<span class="blue">本</span>        ──  書籍の情報（タイトル、著者、ISBN）
+<span class="green">読書記録</span>  ──  「誰が」「何を」「いつ」読んだか
+<span class="purple">感想</span>      ──  読書記録に対するコメント・評価</div>
+  </div>
+
+  <p><strong>Step 2: 属性の定義</strong></p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>エンティティ</th><th>属性</th><th>型</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="4"><span class="tag tag-data">ユーザー</span></td>
+        <td>ID</td><td>自動生成</td><td>一意の識別子</td>
+      </tr>
+      <tr><td>名前</td><td>テキスト</td><td>表示名</td></tr>
+      <tr><td>メール</td><td>テキスト</td><td>ログイン用・一意制約</td></tr>
+      <tr><td>作成日時</td><td>日時</td><td>自動記録</td></tr>
+      <tr>
+        <td rowspan="4"><span class="tag tag-data">本</span></td>
+        <td>ID</td><td>自動生成</td><td>一意の識別子</td>
+      </tr>
+      <tr><td>タイトル</td><td>テキスト</td><td>最大200文字</td></tr>
+      <tr><td>著者</td><td>テキスト</td><td>複数著者の場合は？</td></tr>
+      <tr><td>ISBN</td><td>テキスト</td><td>任意。外部API連携の鍵</td></tr>
+      <tr>
+        <td rowspan="5"><span class="tag tag-data">読書記録</span></td>
+        <td>ID</td><td>自動生成</td><td>一意の識別子</td>
+      </tr>
+      <tr><td>ユーザーID</td><td>外部キー</td><td>→ ユーザー</td></tr>
+      <tr><td>本ID</td><td>外部キー</td><td>→ 本</td></tr>
+      <tr><td>読了日</td><td>日付</td><td>未読了の場合はnull？</td></tr>
+      <tr><td>ステータス</td><td>区分</td><td>読みたい / 読書中 / 読了</td></tr>
+    </tbody>
+  </table>
+
+  <p>「備考」欄に問いかけが並んでいることに注目してください。「複数著者の場合は？」「未読了の場合はnull？」— これらの問いに答えることが、データ設計の核心です。</p>
+
+  <p><strong>Step 3: 関連（リレーション）の定義</strong></p>
+  <p>エンティティ同士の関係を、数の対応関係で表します。</p>
+
+  <div class="diagram-wrap">
+    <div class="text-diagram"><span class="hl">ユーザー</span> 1 ─── * <span class="green">読書記録</span> * ─── 1 <span class="blue">本</span>
+           │                    │
+           │                    │
+           └─── * <span class="purple">感想</span> * ──────┘
+
+<span class="dim">1 ─── *  は「1対多」の関係を意味する
+・1人のユーザーは、複数の読書記録を持つ
+・1冊の本に、複数の読書記録がつく（異なるユーザーが同じ本を読む）
+・1つの読書記録に、複数の感想がつく（読み返しごとに感想を書ける設計の場合）</span></div>
+  </div>
+
+  <h3>「1対多」と「多対多」— 最も重要な判断</h3>
+
+  <p>データ設計で最初にぶつかる判断が、エンティティ間の関係が「1対多」なのか「多対多」なのかです。この判断を間違えると、後から構造の変更が極めて困難になります。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>関係</th><th>意味</th><th>具体例</th><th>実装</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1対1</strong></td>
+        <td>一方に必ず一つだけ対応する</td>
+        <td>ユーザーとプロフィール</td>
+        <td>同じテーブルにまとめるか、分けるか</td>
+      </tr>
+      <tr>
+        <td><strong>1対多</strong></td>
+        <td>一方が複数の相手を持つ</td>
+        <td>ユーザーと投稿（1人が複数投稿）</td>
+        <td>「多」側に「1」側のIDを持たせる</td>
+      </tr>
+      <tr>
+        <td><strong>多対多</strong></td>
+        <td>双方が複数の相手を持つ</td>
+        <td>本とタグ（1冊に複数タグ、1タグに複数の本）</td>
+        <td>中間テーブルが必要</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">💡 バイブコーディングでありがちな失敗</div>
+    <p class="text-sm mb-0">
+      「タスクにカテゴリをつけたい」→「カテゴリ」というテキスト欄をタスクテーブルに追加 → 後から「1つのタスクに複数カテゴリをつけたい」→ テキスト欄ではカンマ区切りで対応 → 検索もフィルタもまともに動かない。最初に「1対多」か「多対多」かを考えておけば、中間テーブルで設計できたはずです。
+    </p>
+  </div>
+
+  <h3>「将来のことは将来考える」が通用しないケース</h3>
+
+  <p>バイブコーディングでは「とりあえず動くものを作る」が基本方針になりがちです。多くの場合それで問題ありませんが、データ構造に関しては例外です。特に以下の3つは、最初に決めておかないと後から修正が極めて困難です：</p>
+
+  <div class="card-grid">
+    <div class="card red">
+      <div class="card-icon">🔑</div>
+      <div class="card-title red-t">IDの設計</div>
+      <div class="card-desc">連番（1, 2, 3...）か UUID か。後から変更すると全リレーションが壊れる</div>
+    </div>
+    <div class="card yellow">
+      <div class="card-icon">🔗</div>
+      <div class="card-title yellow-t">リレーションの構造</div>
+      <div class="card-desc">1対多 → 多対多への変更は中間テーブルの追加とコード全面改修を伴う</div>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🕐</div>
+      <div class="card-title purple-t">日時の扱い</div>
+      <div class="card-desc">タイムゾーンを考慮するか。「作成日」は日付だけでよいか、時刻まで必要か</div>
+    </div>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">自分のプロジェクトのデータ設計を整理したいとき</div>
+    <code>以下のプロジェクトのデータ設計を手伝ってください。
+
+プロジェクト：[あなたのプロジェクトの説明]
+主要な機能：[ユーザーが行う主な操作]
+想定データ量：[1年後にどの程度のデータ量になるか]
+
+以下の手順で進めてください：
+1. エンティティの洗い出し：このシステムが管理する「もの」をすべてリストアップ
+2. 各エンティティの属性定義：カラム名、型、制約（必須/任意、一意性、文字数制限）
+3. リレーションの定義：エンティティ間の関係（1対1 / 1対多 / 多対多）と、その判断理由
+4. 「後から変更が困難な設計判断」の特定：ID設計、リレーション構造、日時の扱い
+
+また、このデータ構造にした場合に「後から追加したくなるが、今の構造では対応困難」になりうる拡張を3つ予測してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 3: State Transition ═══════════════ -->
+<section class="section" id="state">
+  <div class="section-num">CHAPTER 03</div>
+  <h2>状態遷移 — データが「生きている」ことを理解する</h2>
+  <p class="section-subtitle">保存されたデータは静止しているのではなく、ルールに従って「状態」を変えていく</p>
+
+  <p>データ設計で「何を保存するか」を決めたら、次に考えるのは<strong>「保存されたデータがどう変化するか」</strong>です。</p>
+
+  <p>たとえば「注文」というデータは、作成された瞬間から「受付済→決済待ち→決済完了→配送中→配達完了」と状態を変えていきます。この状態の流れと、各遷移が「いつ」「どんな条件で」起きるかを定義するのが状態遷移設計です。</p>
+
+  <h3>なぜ状態遷移を設計する必要があるのか</h3>
+
+  <p>状態遷移を明示的に設計しないままAIに実装を任せると、以下のような問題が起こります：</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>問題</th><th>具体例</th><th>根本原因</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>不正な遷移</td>
+        <td>「キャンセル済」の注文が「配送中」に変更できてしまう</td>
+        <td>遷移の可否ルールが定義されていない</td>
+      </tr>
+      <tr>
+        <td>遷移の抜け</td>
+        <td>決済に失敗した注文がどの状態にもならず宙に浮く</td>
+        <td>異常系の遷移先が考慮されていない</td>
+      </tr>
+      <tr>
+        <td>表示の矛盾</td>
+        <td>一覧画面では「処理中」、詳細画面では「完了」と表示される</td>
+        <td>同じ状態を参照する共通の定義がない</td>
+      </tr>
+      <tr>
+        <td>操作の不整合</td>
+        <td>ステータスに応じて表示すべきボタンがズレている</td>
+        <td>「この状態のとき、何ができるか」の定義がない</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>状態遷移図の書き方</h3>
+
+  <p>状態遷移図は「丸（状態）と矢印（遷移）」のシンプルな図です。矢印には「何がトリガーになるか」を書きます。</p>
+
+  <p>「勤怠申請システム」を例にしてみます。</p>
+
+  <div class="diagram-wrap">
+    <div class="text-diagram">
+    ┌──────┐   申請者が提出   ┌──────┐  上長が承認   ┌──────┐
+    │<span class="hl"> 下書き </span>│ ──────────────→ │<span class="blue"> 申請中 </span>│ ────────────→ │<span class="green"> 承認済 </span>│
+    └──────┘                 └──────┘              └──────┘
+                                │                     │
+                           上長が差戻し           人事が確認
+                                │                     │
+                                ▼                     ▼
+                            ┌──────┐              ┌──────┐
+                            │<span class="hl"> 差戻し </span>│              │<span class="purple"> 確定済 </span>│
+                            └──────┘              └──────┘
+                                │
+                            申請者が再提出
+                                │
+                                ▼
+                            ┌──────┐
+                            │<span class="blue"> 申請中 </span>│<span class="dim"> (再申請)</span>
+                            └──────┘
+
+<span class="dim">各状態で「誰が」「何をできるか」：</span>
+<span class="dim">・下書き    → 申請者のみ編集・提出可能</span>
+<span class="dim">・申請中    → 上長のみ承認・差戻し可能。申請者は閲覧のみ</span>
+<span class="dim">・差戻し    → 申請者のみ再編集・再提出可能</span>
+<span class="dim">・承認済    → 人事のみ確定操作可能</span>
+<span class="dim">・確定済    → 全員閲覧のみ。変更不可</span></div>
+  </div>
+
+  <p>この図の重要なポイントは3つあります：</p>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">🔄</div>
+      <div class="card-title blue-t">遷移のトリガーが明確</div>
+      <div class="card-desc">「誰が」「何をしたら」遷移するかが定義されている。暗黙の推測がない</div>
+    </div>
+    <div class="card green">
+      <div class="card-icon">🚫</div>
+      <div class="card-title green-t">できないことも定義</div>
+      <div class="card-desc">「確定済→下書き」への矢印がない = 確定後の取り消しはできない、という設計判断</div>
+    </div>
+    <div class="card red">
+      <div class="card-icon">↩️</div>
+      <div class="card-title red-t">差戻しの経路がある</div>
+      <div class="card-desc">「承認されなかった場合どうなるか」という異常系の遷移が含まれている</div>
+    </div>
+  </div>
+
+  <h3>状態ごとに「許可される操作」を定義する</h3>
+
+  <p>状態遷移図を描いたら、次に各状態で「誰が」「何をできるか」をマトリクスにします。これは認可（Authorization）の設計に直結します。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>状態</th><th>申請者</th><th>上長</th><th>人事</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>下書き</strong></td>
+        <td>編集・削除・提出</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><strong>申請中</strong></td>
+        <td>閲覧のみ</td>
+        <td>承認・差戻し</td>
+        <td>閲覧のみ</td>
+      </tr>
+      <tr>
+        <td><strong>差戻し</strong></td>
+        <td>再編集・再提出・取下げ</td>
+        <td>閲覧のみ</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><strong>承認済</strong></td>
+        <td>閲覧のみ</td>
+        <td>閲覧のみ</td>
+        <td>確定</td>
+      </tr>
+      <tr>
+        <td><strong>確定済</strong></td>
+        <td>閲覧のみ</td>
+        <td>閲覧のみ</td>
+        <td>閲覧のみ</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">💡 「削除」は状態遷移のひとつ</div>
+    <p class="text-sm mb-0">
+      データを本当に消す（物理削除）か、「削除済」フラグをつける（論理削除）かは、重要な設計判断です。バイブコーディングの規模感でも、業務データは論理削除にしておくと、「間違えて消してしまった」からの復旧が可能になります。「どの状態のデータを削除できるか」も状態遷移設計の一部です。
+    </p>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">自分のプロジェクトの状態遷移を設計したいとき</div>
+    <code>以下のシステムで管理するデータの状態遷移を設計してください。
+
+システム：[あなたのプロジェクトの説明]
+主要なデータ：[状態が変化するデータの名前。例：注文、申請、チケット]
+利用者の種類：[ロール。例：一般ユーザー、管理者、承認者]
+
+以下を成果物として作成してください：
+1. 状態の一覧と各状態の定義（「申請中」とは具体的にどういう状態か）
+2. 状態遷移図（Mermaid記法の stateDiagram-v2 で。各遷移にトリガーを明記）
+3. 状態×ロールの操作許可マトリクス（誰が何をできるか）
+4. 異常系の遷移（タイムアウト、失敗、取り消しなどの経路）
+5. 設計上の判断が必要な問い（「この遷移を許可するか」のような未決定事項）
+
+特に、「矢印がない」こと（= 許可しない遷移）の判断理由も説明してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 4: Architecture ═══════════════ -->
+<section class="section" id="architecture">
+  <div class="section-num">CHAPTER 04</div>
+  <h2>システム構成 — 部品の組み合わせを決める</h2>
+  <p class="section-subtitle">フロントエンド、バックエンド、データベース、外部サービス — どの部品をどう組み合わせるか</p>
+
+  <p>画面設計・データ設計・状態遷移は「何を作るか」の設計でした。システム構成は「どんな技術で作るか」の設計です。</p>
+
+  <p>非エンジニアにとって最も馴染みがないのはこの領域かもしれません。しかし、バイブコーディングの文脈では「正確に理解する」必要はなく、<strong>「どんな選択肢があり、それぞれの選択がどんな結果をもたらすか」</strong>を知っていれば十分です。</p>
+
+  <h3>Webアプリケーションの基本構成</h3>
+
+  <div class="diagram-wrap">
+    <div class="text-diagram">
+  <span class="dim">ユーザーのブラウザ</span>          <span class="dim">サーバー</span>                <span class="dim">データの保管庫</span>
+
+  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+  │              │      │              │      │              │
+  │ <span class="hl">フロントエンド</span>  │ ←──→ │  <span class="blue">バックエンド</span>  │ ←──→ │ <span class="green">データベース</span>  │
+  │              │      │              │      │              │
+  │ HTML/CSS/JS  │      │ API・処理    │      │ データ保存   │
+  │ 画面表示     │      │ ビジネスロジック│      │ 検索・更新   │
+  │ ユーザー操作  │      │ 認証・認可   │      │              │
+  └──────────────┘      └──────────────┘      └──────────────┘
+                               │
+                               ▼
+                        ┌──────────────┐
+                        │  <span class="purple">外部サービス</span>  │
+                        │ 認証、メール  │
+                        │ 決済、AIなど  │
+                        └──────────────┘</div>
+  </div>
+
+  <h3>「どこまで必要か」の判断基準</h3>
+
+  <p>すべてのWebアプリに上の4つの部品がすべて必要なわけではありません。プロジェクトの性質によって、最適な構成は大きく変わります。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>構成</th><th>適するケース</th><th>具体例</th><th>限界</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-arch">フロントのみ</span></td>
+        <td>データ保存不要、自分だけが使う</td>
+        <td>計算ツール、変換ツール、静的な情報サイト</td>
+        <td>データがブラウザに閉じる。複数端末で共有不可</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-arch">フロント + BaaS</span></td>
+        <td>小〜中規模、認証やDB機能が必要</td>
+        <td>Supabase や Firebase を使ったタスク管理アプリ</td>
+        <td>複雑なビジネスロジックには不向き</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-arch">フロント + バック + DB</span></td>
+        <td>複雑な処理、独自のビジネスロジック</td>
+        <td>予約システム、ECサイト、業務管理ツール</td>
+        <td>構築・運用の複雑さが増す</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">💡 BaaS（Backend as a Service）とは</div>
+    <p class="text-sm mb-0">
+      Supabase、Firebase、Amplifyなど、データベース・認証・ファイルストレージなどの「バックエンド」機能をサービスとして提供するもの。自分でサーバーを立てる必要がなく、バイブコーディングの規模感では非常に有力な選択肢です。ただし「サービスの設計思想に沿った使い方」をする必要があり、自由度と引き換えに制約も受けます。
+    </p>
+  </div>
+
+  <h3>技術選定でよくある「後悔する判断」</h3>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>判断</th><th>そのとき思うこと</th><th>後で起きること</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>「全部自分で作ろう」</td>
+        <td>外部サービスに依存したくない</td>
+        <td>認証・セキュリティの実装で数週間消費。しかも脆弱</td>
+      </tr>
+      <tr>
+        <td>「一番人気のフレームワークを使おう」</td>
+        <td>情報が多いから安心</td>
+        <td>学習コストが高すぎて、プロジェクトの規模に対して過剰</td>
+      </tr>
+      <tr>
+        <td>「DBはとりあえずローカルファイルで」</td>
+        <td>セットアップが簡単</td>
+        <td>複数人利用やサーバー移行の段階で全面書き直し</td>
+      </tr>
+      <tr>
+        <td>「フロントだけでいけるはず」</td>
+        <td>サーバーの運用が不要で楽</td>
+        <td>APIキーをフロントに埋め込んで漏洩。バックエンドなしでは守れない</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>APIという「契約」</h3>
+
+  <p>フロントエンドとバックエンドが分離している場合、両者の間でデータをやりとりする窓口が<strong>API（Application Programming Interface）</strong>です。</p>
+
+  <p>APIの設計は、バイブコーディングの文脈では「AIに任せていい」部分と「人間が決めるべき」部分が明確に分かれます。</p>
+
+  <div class="card-grid">
+    <div class="card orange">
+      <div class="card-icon">🤖</div>
+      <div class="card-title orange-t">AIに任せてよい</div>
+      <div class="card-desc">具体的なコード実装、HTTPメソッドの選択、レスポンスの形式、バリデーションのコード</div>
+    </div>
+    <div class="card red">
+      <div class="card-icon">👤</div>
+      <div class="card-title red-t">人間が決めるべき</div>
+      <div class="card-desc">どんなAPIが必要か（エンドポイント一覧）、認証の方針、誰がどのAPIを呼べるか（認可）、エラー時の挙動</div>
+    </div>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">自分のプロジェクトのシステム構成を相談したいとき</div>
+    <code>以下のプロジェクトに最適なシステム構成を提案してください。
+
+プロジェクト：[あなたのプロジェクトの説明]
+利用者数：[想定人数]
+データの性質：[個人情報の有無、データ量の目安]
+自分のスキル：[例：HTMLとPythonは少し書ける、サーバー運用の経験なし]
+予算感：[例：月額のサーバー代は1000円以下に抑えたい]
+
+以下の観点で比較・提案してください：
+1. 構成パターンの候補を2〜3つ提示（それぞれのメリット・デメリット）
+2. 各構成の「この規模を超えたら破綻する」限界点
+3. 推奨構成と、その理由
+4. 将来「やっぱり変えたい」となった場合の移行のしやすさ
+5. 「自前で実装すべきでない」部分と、推奨する外部サービス
+
+完璧な構成ではなく、「この規模感なら十分で、後から変更もしやすい」構成を優先してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 5: Communicating Design ═══════════════ -->
+<section class="section" id="communicate">
+  <div class="section-num">CHAPTER 05</div>
+  <h2>設計をAIに伝える — 指示の精度が出力を決める</h2>
+  <p class="section-subtitle">設計を考えただけでは不十分。それをAIが理解できる形に変換する技術</p>
+
+  <p>ここまでの4章で考えた設計は、頭の中にあるだけでは価値を発揮しません。AIに伝えて初めて、実装の品質に反映されます。</p>
+
+  <p>重要なのは、<strong>設計文書の「形式」ではなく「伝達力」</strong>です。きれいなドキュメントを書くことが目的ではなく、AIが正確に理解し、一貫性のあるコードを生成できる情報を提供することが目的です。</p>
+
+  <h3>「何も言わない」と「明示的に伝える」の差</h3>
+
+  <p>同じ機能をAIに依頼するときの、指示精度の違いを見てみましょう。「ブログ記事の投稿機能」を例にします。</p>
+
+  <div class="compare-grid">
+    <div class="compare-box bad">
+      <span class="compare-label">❌ 設計なしの指示</span>
+      <pre>ブログ記事の投稿機能を作ってください。
+タイトル、本文、カテゴリが入力できて、
+投稿ボタンで保存されるようにしてください。</pre>
+    </div>
+    <div class="compare-box good">
+      <span class="compare-label">✅ 設計を含む指示</span>
+      <pre>ブログ記事の投稿機能を作ってください。
+
+■ データ構造
+- articles テーブル:
+  id (UUID), title (varchar 100, 必須),
+  body (text, 必須), category_id (FK→categories),
+  status (enum: draft/published/archived),
+  author_id (FK→users),
+  created_at, updated_at, published_at
+
+■ 状態遷移
+- draft → published（公開操作時）
+- published → archived（アーカイブ操作時）
+- draft → 削除可能
+- published → draft への戻しは不可
+
+■ 画面
+- 投稿フォーム: タイトル（100字上限表示付き）、
+  本文（Markdown対応）、カテゴリ（セレクト）
+- 下書き保存と公開の2つのボタン
+- 公開前に確認ダイアログを表示
+
+■ バリデーション
+- タイトル: 1〜100文字、空白のみは不可
+- 本文: 1文字以上
+- カテゴリ: 既存カテゴリのIDのみ
+
+■ エラー処理
+- 保存失敗時: 入力内容を保持してエラーメッセージ表示
+- 認証切れ: ログイン画面にリダイレクト（入力内容はlocalStorageに退避）</pre>
+    </div>
+  </div>
+
+  <p>左の指示では、AIは「カテゴリ」をテキスト入力にするかもしれません。ステータス管理はなく、バリデーションも最小限でしょう。右の指示では、AIが「推測」する必要がある部分が大幅に減り、一貫性のあるコードが生成されます。</p>
+
+  <h3>設計情報をAIに渡す3つの方法</h3>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>方法</th><th>適するとき</th><th>ツール例</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-comm">プロンプトに直接書く</span></td>
+        <td>1つの機能を依頼するとき</td>
+        <td>ChatGPT、Claude の通常のチャット</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-comm">ルールファイルとして設定</span></td>
+        <td>プロジェクト全体を通じた一貫性が必要なとき</td>
+        <td>Cursor の <code class="inline">.cursorrules</code>、Claude の Project Instructions</td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-comm">設計文書をファイルで渡す</span></td>
+        <td>複雑な構造を正確に伝えたいとき</td>
+        <td>Markdown ファイル、Mermaid ファイル</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>ルールファイルの書き方</h3>
+
+  <p>ルールファイルは、AIへのすべての指示の「前提条件」として常に適用される設計情報です。横断的関心事をここに定義しておくと、個別の機能を依頼するたびに繰り返す必要がなくなります。</p>
+
+  <div class="diagram-wrap">
+    <pre class="pre-flow">
+# プロジェクト設計方針
+
+## データベース
+- ID: すべてのテーブルで UUID を使用
+- 日時: すべて UTC で保存。表示時にタイムゾーン変換
+- 論理削除: deleted_at カラムを使用。物理削除は行わない
+- 監査カラム: created_at, updated_at を全テーブルに付与
+
+## 認証・認可
+- 認証: Supabase Auth を使用。自前でパスワード管理しない
+- ロール: admin, member の2種類
+- 認可チェック: すべてのAPI呼び出しの先頭で実施
+
+## エラーハンドリング
+- APIエラー: { error: true, code: "XXX", message: "..." } の形式で返す
+- フロント: エラー時はトースト通知で表示。入力フォームは内容を保持
+- ログ: エラー発生時は console.error + エラー追跡サービスに送信
+
+## 状態管理
+- 記事: draft → published → archived（不可逆）
+- ユーザー: active → suspended → deleted（不可逆）
+</pre>
+  </div>
+
+  <h3>Mermaid記法 — AIとの共通言語</h3>
+
+  <p>Mermaid記法は、テキストから図を生成できる記法で、AIとの設計コミュニケーションに非常に適しています。「手書きの図」は人間には伝わりますが、AIには伝わりません。Mermaid記法なら、テキストとして渡せるうえに、図としても表示できます。</p>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>図の種類</th><th>用途</th><th>Mermaid記法の例</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>画面遷移図</td>
+        <td>画面間の移動経路</td>
+        <td><code class="inline">graph TD; A[ログイン] --> B[一覧]</code></td>
+      </tr>
+      <tr>
+        <td>ER図</td>
+        <td>データの構造と関係</td>
+        <td><code class="inline">erDiagram; USER ||--o{ POST : writes</code></td>
+      </tr>
+      <tr>
+        <td>状態遷移図</td>
+        <td>データの状態変化</td>
+        <td><code class="inline">stateDiagram-v2; draft --> published : 公開</code></td>
+      </tr>
+      <tr>
+        <td>シーケンス図</td>
+        <td>処理の順序と主体</td>
+        <td><code class="inline">sequenceDiagram; User->>API: POST /articles</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout info">
+    <div class="callout-title">💡 Mermaid記法を学ぶ必要はない</div>
+    <p class="text-sm mb-0">
+      Mermaid記法そのものを暗記する必要はありません。「画面遷移図をMermaid記法で書いて」とAIに依頼すれば書いてくれます。大事なのは「こういう図が存在し、AIに渡せる」ということを知っていることです。
+    </p>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">自分のプロジェクトのルールファイルを作りたいとき</div>
+    <code>以下のプロジェクトのために、バイブコーディング用の「プロジェクトルールファイル」を作成してください。
+
+プロジェクト：[あなたのプロジェクトの説明]
+使用技術：[フレームワーク、DB、外部サービスなど。未定ならその旨記載]
+データ構造：[主要なエンティティと関係。ざっくりでよい]
+ロール：[ユーザーの種類]
+
+ルールファイルに含めるべき項目：
+1. データベース方針（ID生成方式、日時の扱い、削除方針、共通カラム）
+2. 認証・認可方針（方式、ロール定義、チェックのタイミング）
+3. エラーハンドリング方針（APIレスポンスの形式、フロント表示、ログ記録）
+4. バリデーション方針（入力チェックの共通ルール）
+5. 命名規則（テーブル名、カラム名、API endpoint、ファイル名）
+6. 状態遷移ルール（主要データのステータスと遷移条件）
+
+Cursor の .cursorrules または Claude の Project Instructions としてそのまま使えるMarkdown形式で出力してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ Chapter 6: Calibration ═══════════════ -->
+<section class="section" id="calibrate">
+  <div class="section-num">CHAPTER 06</div>
+  <h2>設計の匙加減 — やりすぎない、でも飛ばさない</h2>
+  <p class="section-subtitle">完璧な設計を目指すと永遠に実装が始まらない。しかし設計ゼロでは必ず行き詰まる</p>
+
+  <div class="epigraph">
+    <p>設計は「保険」のようなものである。何事もなければ無駄に見えるが、問題が起きたときに設計があるかないかで、被害の大きさが桁違いに変わる。</p>
+    <p>ただし保険と同じで、かけすぎれば本来の活動（実装）に使える資源が減る。バイブコーディングにおける設計の目的は、正式な設計書を完成させることではなく、AIの出力を制御可能な水準に保つことである。</p>
+  </div>
+
+  <p>ここまで4章にわたって設計の各要素を解説してきましたが、すべてのプロジェクトですべてを網羅する必要はありません。重要なのは、<strong>プロジェクトの規模と性質に応じて、設計の「濃淡」をつけること</strong>です。</p>
+
+  <h3>規模別の設計投資ガイド</h3>
+
+  <table class="ref-table">
+    <thead>
+      <tr><th>規模</th><th>例</th><th>最低限の設計</th><th>やりすぎの目安</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>使い捨てツール</strong></td>
+        <td>CSV変換、一回限りのスクリプト</td>
+        <td>入出力の形式だけ決める</td>
+        <td>ER図を描いたら過剰</td>
+      </tr>
+      <tr>
+        <td><strong>個人用ツール</strong></td>
+        <td>自分だけが使うメモアプリ</td>
+        <td>データ項目リスト、画面一覧（3行で十分）</td>
+        <td>正式な設計書を書いたら過剰</td>
+      </tr>
+      <tr>
+        <td><strong>チーム・業務ツール</strong></td>
+        <td>5〜20人が使う申請システム</td>
+        <td>画面遷移図、データ設計、状態遷移、ロール定義</td>
+        <td>UMLの全図種を網羅したら過剰</td>
+      </tr>
+      <tr>
+        <td><strong>公開サービス</strong></td>
+        <td>不特定多数が利用するWebサービス</td>
+        <td>上記に加え、セキュリティ設計、負荷設計、運用設計</td>
+        <td>バイブコーディングの範囲を超えている可能性</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>「設計の負債」という考え方</h3>
+
+  <p>設計を省略して先に進むことは、「借金」をしているのと同じです。技術的負債（Technical Debt）と呼ばれるこの概念は、以下のように理解できます：</p>
+
+  <div class="card-grid">
+    <div class="card green">
+      <div class="card-icon">✅</div>
+      <div class="card-title green-t">意図的な省略（計画的な負債）</div>
+      <div class="card-desc">「ここは今は簡易実装にする。理由は○○で、将来○○のタイミングで改修する」<br>→ 返済計画がある借金。問題にならない</div>
+    </div>
+    <div class="card red">
+      <div class="card-icon">❌</div>
+      <div class="card-title red-t">無自覚な省略（無計画な負債）</div>
+      <div class="card-desc">「とりあえず動いたからOK」<br>→ 返済計画のない借金。利息が膨らみ、ある日突然破綻する</div>
+    </div>
+  </div>
+
+  <p>バイブコーディングにおける設計の匙加減とは、<strong>「どこに負債を意図的に残し、どこは今のうちにちゃんとやるか」を自覚的に判断すること</strong>です。</p>
+
+  <h3>「設計を始める前に考えること」と「設計中にやめる判断」</h3>
+
+  <div class="card-grid">
+    <div class="card blue">
+      <div class="card-icon">🏁</div>
+      <div class="card-title blue-t">始める前の問い</div>
+      <div class="card-desc">
+        このプロジェクトは何ヶ月使うか？<br>
+        自分以外の人が触る可能性はあるか？<br>
+        データが消えたら困る度合いは？<br>
+        → 答えの大きさに応じて設計の深度を決める
+      </div>
+    </div>
+    <div class="card orange">
+      <div class="card-icon">🛑</div>
+      <div class="card-title orange-t">やめる判断の基準</div>
+      <div class="card-desc">
+        「次に考えるべきこと」が出てこなくなったら十分。<br>
+        30分考えて新しい問いが浮かばなければ、実装に進んでよい。<br>
+        設計は一度で完璧にするものではなく、実装しながら修正するもの
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-title">⚠ ただし「後から考える」が危険な領域</div>
+    <p class="text-sm mb-0">
+      前章で触れたとおり、以下の3つは「後から変更が極めて困難」なため、簡易的でもよいので最初に決めておくべきです：<br>
+      1. データベースのIDの設計（連番 or UUID）<br>
+      2. エンティティ間のリレーション構造（1対多 or 多対多）<br>
+      3. 認証方式（自前 or 外部サービス）
+    </p>
+  </div>
+
+  <div class="deepdive">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">設計の妥当な深度を判断したいとき</div>
+    <code>以下のプロジェクトについて、バイブコーディングでの設計投資の妥当なレベルを判断してください。
+
+プロジェクト：[あなたのプロジェクトの説明]
+利用期間：[使い捨て / 数ヶ月 / 1年以上]
+利用者：[自分だけ / チーム / 不特定多数]
+データの重要度：[消えても再作成可能 / 消えたら業務に支障 / 消えたら重大損害]
+
+以下を判断してください：
+1. 画面設計：テキスト一覧だけでよいか、遷移図が必要か、ワイヤーフレームまで必要か
+2. データ設計：項目リストだけでよいか、ER図が必要か
+3. 状態遷移：テキストで十分か、図が必要か
+4. システム構成：フロントのみで十分か、バックエンドが必要か
+5. ルールファイル：必要か、不要か
+6. 「今は省略してよいが、将来必要になる」設計項目
+
+各判断について、「なぜそのレベルで十分か」「何がトリガーで次のレベルが必要になるか」を説明してください。</code>
+  </div>
+</section>
+
+<!-- ═══════════════ CHECKLIST ═══════════════ -->
+<section class="section" id="checklist">
+  <div class="section-num">DESIGN CHECKLIST</div>
+  <h2>設計フェーズの自問リスト</h2>
+  <p class="section-subtitle">すべてに答える必要はない。規模に応じて必要な問いを選ぶ</p>
+
+  <h3>🗺️ A. 画面設計</h3>
+  <ul class="checklist">
+    <li>
+      <span class="q">このシステムに存在する全画面を列挙したか？</span>
+      <span class="hint">エラー画面、空データ画面、ローディング画面も含めて</span>
+    </li>
+    <li>
+      <span class="q">画面遷移図（テキストでもよい）を作成したか？</span>
+      <span class="hint">「どの画面からどの画面に行けるか」の全体像</span>
+    </li>
+    <li>
+      <span class="q">認証状態による画面の出し分けを定義したか？</span>
+      <span class="hint">ログイン前/後、ロールごとに見える画面が変わるなら必須</span>
+    </li>
+    <li>
+      <span class="q">主要画面の入出力項目と制約を定義したか？</span>
+      <span class="hint">入力欄ごとの必須/任意、文字数制限、形式制約</span>
+    </li>
+    <li>
+      <span class="q">一覧画面のページネーション・ソート・フィルタを考えたか？</span>
+      <span class="hint">データ量が増えたときに破綻しない表示方法</span>
+    </li>
+  </ul>
+
+  <h3>🗄️ B. データ設計</h3>
+  <ul class="checklist">
+    <li>
+      <span class="q">このシステムが管理する「もの」（エンティティ）をすべて列挙したか？</span>
+      <span class="hint">名詞を拾い上げる：ユーザー、注文、商品、カテゴリ…</span>
+    </li>
+    <li>
+      <span class="q">各エンティティの属性（カラム）と型を定義したか？</span>
+      <span class="hint">最低限：カラム名、型、必須/任意</span>
+    </li>
+    <li>
+      <span class="q">エンティティ間の関係（1対多/多対多）を定義したか？</span>
+      <span class="hint">「後から多対多に変更」は非常にコストが高い</span>
+    </li>
+    <li>
+      <span class="q">IDの生成方式（連番/UUID）を決めたか？</span>
+      <span class="hint">後から変更が極めて困難な設計判断</span>
+    </li>
+    <li>
+      <span class="q">削除の方針（物理削除/論理削除）を決めたか？</span>
+      <span class="hint">業務データは論理削除が安全</span>
+    </li>
+  </ul>
+
+  <h3>🔄 C. 状態遷移</h3>
+  <ul class="checklist">
+    <li>
+      <span class="q">状態が変化するデータを特定したか？</span>
+      <span class="hint">申請、注文、タスクなど「ステータス」を持つもの</span>
+    </li>
+    <li>
+      <span class="q">各状態の定義と遷移条件を明記したか？</span>
+      <span class="hint">「誰が」「何をしたら」遷移するか</span>
+    </li>
+    <li>
+      <span class="q">「許可しない遷移」を明記したか？</span>
+      <span class="hint">矢印が存在しないことも設計判断</span>
+    </li>
+    <li>
+      <span class="q">異常系の遷移先を定義したか？</span>
+      <span class="hint">タイムアウト、失敗、差戻し、取り消し</span>
+    </li>
+    <li>
+      <span class="q">各状態で「誰が何をできるか」のマトリクスを作ったか？</span>
+      <span class="hint">状態×ロールの操作許可表</span>
+    </li>
+  </ul>
+
+  <h3>🏗️ D. システム構成</h3>
+  <ul class="checklist">
+    <li>
+      <span class="q">フロントエンドだけで済むか、バックエンドが必要かを判断したか？</span>
+      <span class="hint">APIキーの保護、複数端末対応、複雑なロジックがあれば要バックエンド</span>
+    </li>
+    <li>
+      <span class="q">データベースの種類を選定したか？</span>
+      <span class="hint">リレーショナルDB（SQL）かNoSQLか。BaaSの利用も検討</span>
+    </li>
+    <li>
+      <span class="q">外部サービスとの連携ポイントを洗い出したか？</span>
+      <span class="hint">認証、メール送信、ファイルストレージ、決済、AI</span>
+    </li>
+    <li>
+      <span class="q">「自前で実装すべきでない」領域を特定したか？</span>
+      <span class="hint">認証、決済、暗号化は原則として既存サービスに委ねる</span>
+    </li>
+  </ul>
+
+  <h3>📝 E. AIへの伝達</h3>
+  <ul class="checklist">
+    <li>
+      <span class="q">プロジェクトのルールファイル（横断的な設計方針）を作成したか？</span>
+      <span class="hint">ID方式、日時の扱い、削除方針、エラー処理、命名規則</span>
+    </li>
+    <li>
+      <span class="q">主要な図（画面遷移、ER図、状態遷移）をテキストベースで用意したか？</span>
+      <span class="hint">Mermaid記法やプレーンテキストでAIに渡せる形式</span>
+    </li>
+    <li>
+      <span class="q">機能を依頼する順序を決めたか？</span>
+      <span class="hint">基盤（認証、データ構造）→ 主要機能 → 補助機能の順が安全</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══════════════ Keywords ═══════════════ -->
+<section class="section" id="keywords">
+  <div class="section-num">KEYWORD INDEX</div>
+  <h2>設計の用語索引 — AIと深掘りするための入口</h2>
+  <p class="section-subtitle">各用語をクリックすると、AIに質問するためのプロンプトがコピーされます</p>
+
+  <h3>画面設計</h3>
+  <div class="kw-grid">
+    <div class="kw-item">画面遷移図 <span class="kw-en">Screen Flow</span></div>
+    <div class="kw-item">ワイヤーフレーム <span class="kw-en">Wireframe</span></div>
+    <div class="kw-item">入出力定義 <span class="kw-en">I/O Definition</span></div>
+    <div class="kw-item">ページネーション <span class="kw-en">Pagination</span></div>
+    <div class="kw-item">レスポンシブ <span class="kw-en">Responsive Design</span></div>
+    <div class="kw-item">モーダル/ダイアログ <span class="kw-en">Modal Dialog</span></div>
+    <div class="kw-item">空の状態 <span class="kw-en">Empty State</span></div>
+    <div class="kw-item">ローディング状態 <span class="kw-en">Loading State</span></div>
+  </div>
+
+  <h3>データ設計</h3>
+  <div class="kw-grid">
+    <div class="kw-item">エンティティ <span class="kw-en">Entity</span></div>
+    <div class="kw-item">属性 / カラム <span class="kw-en">Attribute / Column</span></div>
+    <div class="kw-item">リレーション <span class="kw-en">Relation</span></div>
+    <div class="kw-item">ER図 <span class="kw-en">Entity-Relationship</span></div>
+    <div class="kw-item">主キー <span class="kw-en">Primary Key</span></div>
+    <div class="kw-item">外部キー <span class="kw-en">Foreign Key</span></div>
+    <div class="kw-item">正規化 <span class="kw-en">Normalization</span></div>
+    <div class="kw-item">中間テーブル <span class="kw-en">Junction Table</span></div>
+    <div class="kw-item">UUID <span class="kw-en">Universally Unique ID</span></div>
+    <div class="kw-item">論理削除 <span class="kw-en">Soft Delete</span></div>
+    <div class="kw-item">マイグレーション <span class="kw-en">Migration</span></div>
+  </div>
+
+  <h3>状態遷移</h3>
+  <div class="kw-grid">
+    <div class="kw-item">状態遷移図 <span class="kw-en">State Diagram</span></div>
+    <div class="kw-item">ステートマシン <span class="kw-en">State Machine</span></div>
+    <div class="kw-item">遷移条件 <span class="kw-en">Transition Guard</span></div>
+    <div class="kw-item">終端状態 <span class="kw-en">Terminal State</span></div>
+    <div class="kw-item">楽観的更新 <span class="kw-en">Optimistic Update</span></div>
+  </div>
+
+  <h3>システム構成</h3>
+  <div class="kw-grid">
+    <div class="kw-item">フロントエンド <span class="kw-en">Frontend</span></div>
+    <div class="kw-item">バックエンド <span class="kw-en">Backend</span></div>
+    <div class="kw-item">API <span class="kw-en">Application Programming Interface</span></div>
+    <div class="kw-item">REST API <span class="kw-en">RESTful API</span></div>
+    <div class="kw-item">BaaS <span class="kw-en">Backend as a Service</span></div>
+    <div class="kw-item">環境変数 <span class="kw-en">Environment Variables</span></div>
+    <div class="kw-item">デプロイ <span class="kw-en">Deploy</span></div>
+    <div class="kw-item">ホスティング <span class="kw-en">Hosting</span></div>
+  </div>
+
+  <h3>設計記法・文書</h3>
+  <div class="kw-grid">
+    <div class="kw-item">Mermaid記法 <span class="kw-en">Mermaid Syntax</span></div>
+    <div class="kw-item">UML <span class="kw-en">Unified Modeling Language</span></div>
+    <div class="kw-item">CRUD図 <span class="kw-en">CRUD Matrix</span></div>
+    <div class="kw-item">シーケンス図 <span class="kw-en">Sequence Diagram</span></div>
+    <div class="kw-item">技術的負債 <span class="kw-en">Technical Debt</span></div>
+    <div class="kw-item">ルールファイル <span class="kw-en">Rules File</span></div>
+  </div>
+
+  <div class="deepdive mt-md">
+    <div class="dd-label">🤖 AI DEEP DIVE PROMPT</div>
+    <div class="dd-title">知らない用語について体系的に学びたいとき</div>
+    <code>以下の用語について、バイブコーディング（AIにコードを書かせる開発手法）における「設計」の文脈で教えてください。
+
+用語：[ここに用語を入れる]
+
+以下の形式で回答してください：
+1. 一言での定義
+2. なぜバイブコーディングの設計段階で重要か（知らないとどんな問題が起きるか）
+3. 具体例：Webアプリ（例：備品予約システムや読書記録アプリ）を例にした説明
+4. 関連する概念（この用語を理解すると次に学ぶべき概念）
+5. AIへの指示に活かすための実践的なアドバイス1つ
+
+プログラミング初学者向けに、専門用語の初出時には簡単な説明を添えてください。</code>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════ Footer ═══════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <p><strong>公開情報</strong></p>
+    <p>
+      バージョン: v0.1.0<br>
+      最終更新: 2026-02-14<br>
+      更新方針: 必要時に随時更新（静的サイト運用）
+    </p>
+    <p><strong>関連ガイド</strong></p>
+    <p>
+      本ガイドは「Vibe Coding Preflight Guide」の設計章を深掘りした独立文書です。<br>
+      要件定義・品質・安全性については Preflight Guide を参照してください。
+    </p>
+    <p><strong>参照元</strong></p>
+    <p>
+      IPA「ユーザのための要件定義ガイド 第2版」—
+      <a href="https://www.ipa.go.jp/archive/digital/iot-en-ci/jyouryuu/youkenteigi.html" target="_blank" rel="noopener">IPA要件定義</a><br>
+      IPA「非機能要求グレード 2018」—
+      <a href="https://www.ipa.go.jp/archive/digital/iot-en-ci/jyouryuu/hikinou/ent03-b.html" target="_blank" rel="noopener">IPA非機能要求グレード</a><br>
+      IPA「機能要件の合意形成ガイド」（画面編・データモデル編）— IPA公式サイト内公開資料<br>
+      IPA「共通フレーム2013」— IPA公式サイト内公開資料<br>
+      Mermaid公式ドキュメント —
+      <a href="https://mermaid.js.org/" target="_blank" rel="noopener">mermaid.js.org</a>
+    </p>
+    <p class="mt-16">
+      本ガイドは、バイブコーディングにおける設計知識の必要性を背景に、非エンジニアの学習リソースとして作成されたものです。
+      内容はIPA公開資料および一般的なソフトウェアエンジニアリングの知識体系に基づいています。
+    </p>
+  </div>
+</footer>
+</body>
+</html>
