@@ -1,6 +1,6 @@
-# System Design Guide
+# Software Design Guide
 
-`System_Design_Guide` は GitHub Pages で公開する静的サイトです。
+`software_design_guide` は GitHub Pages で公開する静的サイトです。
 
 ## ファイル構成
 
